@@ -19,3 +19,5 @@ nextflow run nf-core/smrnaseq -r 2.2.0 -profile singularity --input sample_sheet
 
 
 #########    dev version is used 
+
+(env_nf) [sor4003@scu-node038 run6_diff_expression_iN_ESC_H9_K562_zswim8_ko]$ nextflow run nf-core/smrnaseq -r dev -profile singularity --input sample_sheet_k562_small_RNA.csv --mirtrace_species 'hsa' --protocol 'custom' --outdir k562_z8_ko_MIRGeneDB -params-file params.yml --mature /athena/kleavelandlab/store/sor4003/2_star_genome_index_nexflow/small_RNA_genomes/MirGeneDB_hsa/hsa_MirGeneDB_mature.fa --mirna_gtf /athena/kleavelandlab/store/sor4003/2_star_genome_index_nexflow/small_RNA_genomes/MirGeneDB_hsa/hsa_miRNA_MirGeneDB.gff --hairpin /athena/kleavelandlab/store/sor4003/2_star_genome_index_nexflow/small_RNA_genomes/MirGeneDB_hsa/hsa_MirGeneDB_precusor.fa -resume --igenomes_ignore True --fasta /athena/kleavelandlab/store/sor4003/2_star_genome_index_nexflow/small_RNA_genomes/MirGeneDB_hsa/GRCh38.primary_assembly.genome.fa
