@@ -25,3 +25,10 @@ nextflow run nf-core/smrnaseq -r 2.2.0 -profile singularity --input sample_sheet
 
 ########## extracting fasta file 
 grep -A 1 "hsa" mature_mirBASE_all.fa | grep -v "^--$" > hsa_mature_mirBase.fa
+
+
+
+####### cassava naming conviton 
+
+file.fastq.gz ##### file.trim.fastq.gz >>> is wrong 
+
