@@ -3,6 +3,8 @@
 #screen
 # conda envi
 
+srun --pty --partition=scu-cpu --mem=200G --cpus-per-task=20 bash -i 
+
 # NXF_OPTS='-Xms1g -Xmx4g'
 
 nextflow run nf-core/smrnaseq -profile singularity --input samplesheet.csv --genome 'GRCh37' --mirtrace_species 'hsa' --protocol 'custom' --outdir <OUTDIR> --mirgenedb TRUE 
