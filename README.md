@@ -43,5 +43,9 @@ file.fastq.gz ##### file.trim.fastq.gz >>> is wrong
 nextflow run nf-core/smrnaseq -r dev -profile singularity --input trimmed_sample_sheet_k562_small_RNA.csv --mirtrace_species 'hsa' --protocol 'custom' --outdir k562_z8_ko_mirbase_hsa_subsetted_cutadat_trimmed_genome_as_contmination -params-file params.yml --mature /athena/kleavelandlab/store/sor4003/2_star_genome_index_nexflow/small_RNA_genomes/MirGeneDB_hsa/hsa_mature_mirBase.fa --mirna_gtf /athena/kleavelandlab/store/sor4003/2_star_genome_index_nexflow/small_RNA_genomes/MirGeneDB_hsa/hsa_mirBase.gff3 --hairpin /athena/kleavelandlab/store/sor4003/2_star_genome_index_nexflow/small_RNA_genomes/MirGeneDB_hsa/hsa_hairpin_mirBase.fa -resume --igenomes_ignore True --fasta /athena/kleavelandlab/store/sor4003/2_star_genome_index_nexflow/small_RNA_genomes/MirGeneDB_hsa/GRCh38.primary_assembly.genome.fa --trim_fastq false --clip_r1 0 --three_prime_clip_r1 0 --cdna /athena/kleavelandlab/store/sor4003/2_star_genome_index_nexflow/small_RNA_genomes/smallRNA_contamination_fasta/GRCh38.primary_assembly.genome.fa
 
 
-##### 
+##### mapping into human genome with bowtie index 
+####https://scilifelab.github.io/courses/rnaseq/labs/smallRNA-lab
+location-/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/smallRNA_contamination_fasta
+
+bowtie2-build GRCh38.primary_assembly.genome.fa GRCh38.primary_assembly.genome_index
 
