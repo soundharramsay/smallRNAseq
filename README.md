@@ -49,3 +49,40 @@ location-/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genom
 
 bowtie2-build GRCh38.primary_assembly.genome.fa GRCh38.primary_assembly.genome_index
 
+bash script 
+#!/bin/bash
+#wtie2 index name and output directory
+index_base_name="/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/smallRNA_contamination_fasta/GRCh38.primary_assembly.genome_index"
+output_dir="5_K562_bowtie2_map_hsa_genome"
+
+# Create the output directory if it doesn't exist
+mkdir -p "$output_dir"
+
+# List of input FASTQ files (replace these with your file names)
+fastq_files=("trim_E10_1_Z8KO_k562_sample4_S4_L002_R1_001.fastq.gz"
+"trim_E13_1_z8ko_sample5_S5_L002_R1_001.fastq.gz"
+"trim_E13_2_z8ko_sample6_S6_L002_R1_001.fastq.gz"
+"trim_E13_3_z8ko_sample7_S7_L002_R1_001.fastq.gz"
+"trim_nt1_k562_sample1_S1_L002_R1_001.fastq.gz"
+"trim_nt2_k562_sample2_S2_L002_R1_001.fastq.gz"
+"trim_nt3_k562_sample3_S3_L002_R1_001.fastq.gz")
+
+# Loop over each FASTQ file
+for fastq_file in "${fastq_files[@]}"; do
+    filename=$(basename "$fastq_file")
+    sam_file="${output_dir}/${filename%.fastq.gz}.sam"
+    bam_file="${output_dir}/${filename%.fastq.gz}.bam"
+    sorted_bam_file="${output_dir}/${filename%.fastq.gz}.sorted.bam"
+
+    # Run Bowtie2 alignment
+    bowtie2 -q --very-sensitive-local -x "$index_base_name" -U "$fastq_file" -S "$sam_file"
+
+    # Convert SAM to BAM and sort
+    samtools view -S -b "$sam_file" | samtools sort -o "$sorted_bam_file"
+
+    # Optional: Index the sorted BAM file
+    samtools index "$sorted_bam_file"
+done
+
+
+
