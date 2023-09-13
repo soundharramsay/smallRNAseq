@@ -114,5 +114,13 @@ for samfile in "$input_dir"/*.sam; do
     echo "Counting completed for $samfile"
 done
 
+#### remove first line from text file 
+for file in E10_1_Z8KO_k562_sample4_S4_L002_R1_001.featureCounts.txt E13_3_z8ko_sample7_S7_L002_R1_001.featureCounts.txt nt3_k562_sample3_S3_L002_R1_001.featureCounts.txt E13_1_z8ko_sample5_S5_L002_R1_001.featureCounts.txt nt1_k562_sample1_S1_L002_R1_001.featureCounts.txt E13_2_z8ko_sample6_S6_L002_R1_001.featureCounts.txt nt2_k562_sample2_S2_L002_R1_001.featureCounts.txt; do
+    sed -i '1d' "$file"
+done
+
+####### adding starting pattern of the file name as seven column name 
+for file in E10_1_Z8KO_k562_sample4_S4_L002_R1_001.featureCounts.txt E13_3_z8ko_sample7_S7_L002_R1_001.featureCounts.txt nt3_k562_sample3_S3_L002_R1_001.featureCounts.txt E13_1_z8ko_sample5_S5_L002_R1_001.featureCounts.txt nt1_k562_sample1_S1_L002_R1_001.featureCounts.txt E13_2_z8ko_sample6_S6_L002_R1_001.featureCounts.txt nt2_k562_sample2_S2_L002_R1_001.featureCounts.txt; do     new_col_name="$(echo "$file" | cut -d'_' -f1,2)";     awk -v new_col_name="$new_col_name" 'BEGIN {FS=OFS="\t"} NR==1 {$7=new_col_name} {print}' "$file" > temp && mv temp "$file"; done
+
 
 
