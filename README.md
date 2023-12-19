@@ -133,9 +133,32 @@ for file in *.fastq.gz; do
     output_file="mir7_5p_subset_$(basename "$file" .fastq.gz).txt"
     zgrep -i TGGAAGACTAGTGATTTTGTTGTT "$file" > "$output_file"
 done
+#### extracting len and number of lines 
 
+# Create a single output file
+output_file="merged.output.count.txt"
 
+# Iterate over all *.txt files
+for file in *.txt; do
+    # Extract total number of lines and length of lines
+    total_lines=$(wc -l < "$file")
+    line_length=$(awk '{ if (length > max) max = length } END { print max }' "$file")
+    
+    # Append the information to the merged output file
+    echo "Input File: $file" >> "$output_file"
+    echo "Total Number of Lines: $total_lines" >> "$output_file"
+    echo "Maximum Line Length: $line_length" >> "$output_file"
+    echo "" >> "$output_file"  # Add a separator between file entries
+done
+############# line length frequency #### good to execute as .sh script
 
+output_file="merged_line_length_frequencies.txt"
+
+for file in mir7_5p*.txt; do
+    echo "=== $file ===" >> "$output_file"
+    awk '{ lengths[length]++ } END { for (i in lengths) print i, lengths[i] }' "$file" >> "$output_file"
+    echo "" >> "$output_file"  # Add a separator between file sections
+done
 
 
 
