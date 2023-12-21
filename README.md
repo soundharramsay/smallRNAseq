@@ -129,9 +129,9 @@ for file in E10_1_Z8KO_k562_sample4_S4_L002_R1_001.featureCounts.txt E13_3_z8ko_
 
 ####### counting mir7-5p in original and trimmed.fastq files 
 
-for file in *.fastq.gz; do
-    output_file="mir7_5p_subset_$(basename "$file" .fastq.gz).txt"
-    zgrep -i TGGAAGACTAGTGATTTTGTTGTT "$file" > "$output_file"
+for file in trim_*.fastq.gz; do
+    output_file="mir7_5p_18nt_subset_$(basename "$file" .fastq.gz).txt"
+    zgrep -i TGGAAGACTAGTGATTTT "$file" > "$output_file"
 done
 #### extracting len and number of lines 
 
