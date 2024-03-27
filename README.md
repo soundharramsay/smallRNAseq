@@ -78,6 +78,7 @@ for fastq_file in "${fastq_files[@]}"; do
     ################################################################################################################ things to do in analysis 
     #### are zswim8 microRNA are isomirs ----- mature -- +1-mature +2-mature , -1-mature and -2-mature ----- only for zswim8 sensitive microRNA 
     #### to ur microRNA reference add ADAR microRNA 
+    #### what is the mismatch your mapping allowing on mismatch reads 
 
     # Run Bowtie2 alignment
     bowtie2 -q --very-sensitive-local -x "$index_base_name" -U "$fastq_file" -S "$sam_file"
