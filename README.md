@@ -121,7 +121,7 @@ for samfile in "$input_dir"/*.sam; do
 done
 
 
-###################################################### Feature_count_no_mismatch#################################################
+###################################################### Feature_count_no_mismatch################################################# this is not the write startegy do from mapping itself 
 
 #!/bin/bash
 #input SAM files directory
