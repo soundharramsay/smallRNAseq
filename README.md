@@ -49,7 +49,7 @@ location-/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genom
 
 bowtie2-build GRCh38.primary_assembly.genome.fa GRCh38.primary_assembly.genome_index
 
-bash script 
+bash script  ------- spack load samtools@1.14%gcc@4.8.5
 #!/bin/bash
 #wtie2 index name and output directory
 index_base_name="/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/smallRNA_contamination_fasta/GRCh38.primary_assembly.genome_index"
