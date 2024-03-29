@@ -1,4 +1,4 @@
-# smallRNAseq
+# smallRNAseq conda activate bowtie2
 
 #screen
 # conda envi
@@ -122,6 +122,40 @@ done
 
 
 ###################################################### Feature_count_no_mismatch#################################################
+
+#!/bin/bash
+#input SAM files directory
+input_dir="/home/sor4003/store_sor4003/RNAseq_results_fastq/run7_k562_small_RNA_Seq/Kleaveland-SR-14763_2023_07_28/5_K562_bowtie2_map_hsa_genome"
+
+# Define the desired output directory name
+output_dir_name="my_miRNA_counts_no_mismtach_featurecount"
+
+# Define the path to the miRBase GTF file
+mirbase_gtf="/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/mirBASE/hsa_mirBase.gff3"
+# Create the output directory
+output_dir="/home/sor4003/store_sor4003/RNAseq_results_fastq/run7_k562_small_RNA_Seq/Kleaveland-SR-14763_2023_07_28/5_K562_bowtie2_map_hsa_genome/my_miRNA_counts_no_mismtach_featurecount/$output_dir_name"
+mkdir -p "$output_dir"
+
+# Loop through all SAM files in the input directory
+for samfile in "$input_dir"/*.sam; do
+    # Get the base name of the SAM file without extension
+    base_name="$(basename "$samfile" .sam)"
+
+    # Define the output file name
+    outfile="$output_dir/$base_name.featureCounts.txt"
+
+    # Run featureCounts
+    featureCounts -t miRNA -g Name -O -s 1 -M -a "$mirbase_gtf" -o "$outfile" "$samfile"
+
+    # Print a message indicating completion for this file
+    echo "Counting completed for $samfile"
+done
+
+
+
+
+
+
 
 
 #### remove first line from text file 
