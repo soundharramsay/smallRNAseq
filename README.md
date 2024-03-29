@@ -90,7 +90,7 @@ for fastq_file in "${fastq_files[@]}"; do
     samtools index "$sorted_bam_file"
 done
 
-######### feature counts 
+######### feature counts ------- includes reads with mismatch 
 
 #!/bin/bash
 #input SAM files directory
@@ -119,6 +119,10 @@ for samfile in "$input_dir"/*.sam; do
     # Print a message indicating completion for this file
     echo "Counting completed for $samfile"
 done
+
+
+###################################################### Feature_count_no_mismatch#################################################
+
 
 #### remove first line from text file 
 for file in E10_1_Z8KO_k562_sample4_S4_L002_R1_001.featureCounts.txt E13_3_z8ko_sample7_S7_L002_R1_001.featureCounts.txt nt3_k562_sample3_S3_L002_R1_001.featureCounts.txt E13_1_z8ko_sample5_S5_L002_R1_001.featureCounts.txt nt1_k562_sample1_S1_L002_R1_001.featureCounts.txt E13_2_z8ko_sample6_S6_L002_R1_001.featureCounts.txt nt2_k562_sample2_S2_L002_R1_001.featureCounts.txt; do
