@@ -91,7 +91,7 @@ for fastq_file in "${fastq_files[@]}"; do
     # Optional: Index the sorted BAM file
     samtools index "$sorted_bam_file"
 done
-
+######################################### bowtie mapping parameter discussed https://github.com/BenLangmead/bowtie2/issues/92
 ######### feature counts ------- includes reads with mismatch 
 
 #!/bin/bash
@@ -152,10 +152,6 @@ for samfile in "$input_dir"/*.sam; do
     # Print a message indicating completion for this file
     echo "Counting completed for $samfile"
 done
-
-
-
-
 
 
 
