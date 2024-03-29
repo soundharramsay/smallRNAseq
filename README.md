@@ -173,6 +173,26 @@ done
 
 ###### Making final count table 
 
+#!/bin/bash
+
+# Initialize output file
+output_file="combined_output.txt"
+
+# Remove the output file if it exists
+rm -f "$output_file"
+
+# Loop through each .txt file
+for file in *.txt; do
+    # Check if the output file exists
+    if [ -f "$output_file" ]; then
+        # Extract and merge data based on column 1
+        awk 'BEGIN {FS=OFS="\t"} NR==FNR {data[$1] = $0; next} {print $0, (data[$1] != "" ? data[$1] : "NA")}' "$file" "$output_file" > temp && mv temp "$output_file"
+    else
+        # If output file doesn't exist, just copy the current file
+        cp "$file" "$output_file"
+    fi
+done
+
 
 ##### done on DEC18 
 
