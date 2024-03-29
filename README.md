@@ -96,7 +96,7 @@ done
 
 #!/bin/bash
 #input SAM files directory
-input_dir="/home/sor4003/store_sor4003/RNAseq_results_fastq/run7_k562_small_RNA_Seq/Kleaveland-SR-14763_2023_07_28/5_K562_bowtie2_map_hsa_genome"
+input_dir="./"
 
 # Define the desired output directory name
 output_dir_name="my_miRNA_counts"
@@ -104,7 +104,7 @@ output_dir_name="my_miRNA_counts"
 # Define the path to the miRBase GTF file
 mirbase_gtf="/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/mirBASE/hsa_mirBase.gff3"
 # Create the output directory
-output_dir="/home/sor4003/store_sor4003/RNAseq_results_fastq/run7_k562_small_RNA_Seq/Kleaveland-SR-14763_2023_07_28/5_K562_bowtie2_map_hsa_genome/$output_dir_name"
+output_dir="/home/sor4003/store_sor4003/RNAseq_results_fastq/run7_k562_small_RNA_Seq/Kleaveland-SR-14763_2023_07_28/5b_k562_bowtie2_without_anymismatch_map_hsa_genome/$output_dir_name"
 mkdir -p "$output_dir"
 
 # Loop through all SAM files in the input directory
