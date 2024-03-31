@@ -29,7 +29,7 @@ nextflow run nf-core/smrnaseq -r dev -profile singularity --input trimmed_sample
 ##################################################################################################################################################################################################
 
 
-##### mapping into human genome with bowtie index 
+##### mapping into the human genome with bowtie index 
 ####https://scilifelab.github.io/courses/rnaseq/labs/smallRNA-lab
 location-/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/smallRNA_contamination_fasta
 
@@ -112,11 +112,7 @@ for fastq_file in "${fastq_files[@]}"; do
     samtools index "$sorted_bam_file"
 done
 
-
-
-
-
-######### feature counts ------- includes reads with mismatch 
+######### feature counts 
 
 #!/bin/bash
 #input SAM files directory
@@ -147,47 +143,14 @@ for samfile in "$input_dir"/*.sam; do
 done
 
 
-###################################################### Feature_count_no_mismatch################################################# this is not the write startegy do from mapping itself 
-
-#!/bin/bash
-#input SAM files directory
-input_dir="/home/sor4003/store_sor4003/RNAseq_results_fastq/run7_k562_small_RNA_Seq/Kleaveland-SR-14763_2023_07_28/5_K562_bowtie2_map_hsa_genome"
-
-# Define the desired output directory name
-output_dir_name="my_miRNA_counts_no_mismtach_featurecount"
-
-# Define the path to the miRBase GTF file
-mirbase_gtf="/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/mirBASE/hsa_mirBase.gff3"
-# Create the output directory
-output_dir="/home/sor4003/store_sor4003/RNAseq_results_fastq/run7_k562_small_RNA_Seq/Kleaveland-SR-14763_2023_07_28/5_K562_bowtie2_map_hsa_genome/my_miRNA_counts_no_mismtach_featurecount/$output_dir_name"
-mkdir -p "$output_dir"
-
-# Loop through all SAM files in the input directory
-for samfile in "$input_dir"/*.sam; do
-    # Get the base name of the SAM file without extension
-    base_name="$(basename "$samfile" .sam)"
-
-    # Define the output file name
-    outfile="$output_dir/$base_name.featureCounts.txt"
-
-    # Run featureCounts
-    featureCounts -t miRNA -g Name -O -s 1 -M -a "$mirbase_gtf" -o "$outfile" "$samfile"
-
-    # Print a message indicating completion for this file
-    echo "Counting completed for $samfile"
-done
-
-
-
-
-#### remove first line from text file 
+############################################################################################################## remove first line from text file 
 for file in E10_1_Z8KO_k562_sample4_S4_L002_R1_001.featureCounts.txt E13_3_z8ko_sample7_S7_L002_R1_001.featureCounts.txt nt3_k562_sample3_S3_L002_R1_001.featureCounts.txt E13_1_z8ko_sample5_S5_L002_R1_001.featureCounts.txt nt1_k562_sample1_S1_L002_R1_001.featureCounts.txt E13_2_z8ko_sample6_S6_L002_R1_001.featureCounts.txt nt2_k562_sample2_S2_L002_R1_001.featureCounts.txt; do
     sed -i '1d' "$file"
 done
 
 for file in *.txt; do     sed -i '1d' "$file"; done
 
-####### adding starting pattern of the file name as seven column name 
+################################################################################################################# adding starting pattern of the file name as seven column name 
 for file in E10_1_Z8KO_k562_sample4_S4_L002_R1_001.featureCounts.txt E13_3_z8ko_sample7_S7_L002_R1_001.featureCounts.txt nt3_k562_sample3_S3_L002_R1_001.featureCounts.txt E13_1_z8ko_sample5_S5_L002_R1_001.featureCounts.txt nt1_k562_sample1_S1_L002_R1_001.featureCounts.txt E13_2_z8ko_sample6_S6_L002_R1_001.featureCounts.txt nt2_k562_sample2_S2_L002_R1_001.featureCounts.txt; do     new_col_name="$(echo "$file" | cut -d'_' -f1,2)";     awk -v new_col_name="$new_col_name" 'BEGIN {FS=OFS="\t"} NR==1 {$7=new_col_name} {print}' "$file" > temp && mv temp "$file"; done
 
 for file in *.txt; do
@@ -195,7 +158,7 @@ for file in *.txt; do
     awk -v new_col_name="$new_col_name" 'BEGIN {FS=OFS="\t"} NR==1 {$7=new_col_name} {print}' "$file" > temp && mv temp "$file"
 done
 
-###### Making final count table 
+################################################################################################################ Making final count table 
 
 #!/bin/bash
 
