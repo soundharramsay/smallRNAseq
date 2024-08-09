@@ -1,16 +1,129 @@
 
 ### test line 
-# smallRNAseq conda activate bowtie2
+
 eval "$(/home/sor4003/anaconda3/bin/conda shell.bash hook)"
+# smallRNAseq
+
+
 
 ################################################################################################## trimming 
-
+conda activate /software/apps/cutadapt3.4
 #remove 8N at start of sequence and trim 3' adapter​
 for file in *.gz; do cutadapt -u 8 -a NNNNAGATCGGAAGAGCACA -m 15 -o ${file/fastq.gz/trim.txt.gz} $file; done
 
+################################################################################################## mapping
+conda activate bowtie2
+spack load samtools@1.14%gcc@4.8.5
 
+#!/bin/bash
+# Bowtie2 index name and output directory
+index_base_name="/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/smallRNA_contamination_fasta/GRCh38.primary_assembly.genome_index"
+output_dir="5b_k562_bowtie2_without_anymismatch_map_hsa_genome"
 
+# Create the output directory if it doesn't exist
+mkdir -p "$output_dir"
 
+# List of input FASTQ files
+fastq_files=(
+    "16925_1_S395_R1_nt1_concat.trim.txt.gz"
+    "16925_1_S395_R2_nt1_concat.trim.txt.gz"
+    "16925_2_S396_R1_nt2_concat.trim.txt.gz"
+    "16925_2_S396_R2_nt2_concat.trim.txt.gz"
+    "16925_3_S397_R1_nt3_concat.trim.txt.gz"
+    "16925_3_S397_R2_nt3_concat.trim.txt.gz"
+    "16925_4_S398_R1_e101_concat.trim.txt.gz"
+    "16925_4_S398_R2_e101_concat.trim.txt.gz"
+    "16925_5_S399_R1_e102_concat.trim.txt.gz"
+    "16925_5_S399_R2_e102_concat.trim.txt.gz"
+    "16925_6_S400_R1_e103_concat.trim.txt.gz"
+    "16925_6_S400_R2_e103_concat.trim.txt.gz"
+)
+
+# Loop over each FASTQ file
+for fastq_file in "${fastq_files[@]}"; do
+    filename=$(basename "$fastq_file")
+    sam_file="${output_dir}/${filename%.txt.gz}.sam"
+    bam_file="${output_dir}/${filename%.txt.gz}.bam"
+    sorted_bam_file="${output_dir}/${filename%.txt.gz}.sorted.bam"
+
+    # Run Bowtie2 alignment
+    bowtie2 -q --end-to-end --score-min C,0,0 -N 0 -x "$index_base_name" -U "$fastq_file" -S "$sam_file"
+
+    # Convert SAM to BAM and sort
+    samtools view -S -b "$sam_file" | samtools sort -o "$sorted_bam_file"
+
+    # Optional: Index the sorted BAM file
+    samtools index "$sorted_bam_file"
+done
+
+############################################################################################################### featurecount 
+
+#!/bin/bash
+#input SAM files directory
+input_dir="./"
+
+# Define the desired output directory name
+output_dir_name="my_miRNA_counts"
+
+# Define the path to the miRBase GTF file
+mirbase_gtf="/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/mirBASE/hsa_mirBase.gff3"
+# Create the output directory
+output_dir="./$output_dir_name"
+mkdir -p "$output_dir"
+
+# Loop through all SAM files in the input directory
+for samfile in "$input_dir"/*.sam; do
+    # Get the base name of the SAM file without extension
+    base_name="$(basename "$samfile" .sam)"
+
+    # Define the output file name
+    outfile="$output_dir/$base_name.featureCounts.txt"
+
+    # Run featureCounts
+    featureCounts -t miRNA -g Name -O -s 1 -M -a "$mirbase_gtf" -o "$outfile" "$samfile"
+
+    # Print a message indicating completion for this file
+    echo "Counting completed for $samfile"
+done
+
+############################################################################################################### editing featurecount output text 
+
+This script will remove the first line from each of the specified .featureCounts.txt files and from any other .txt files in the directory.
+
+for file in 16925_1_S395_R1_nt1_concat.trim.featureCounts.txt 16925_2_S396_R1_nt2_concat.trim.featureCounts.txt 16925_3_S397_R1_nt3_concat.trim.featureCounts.txt 16925_4_S398_R1_e101_concat.trim.featureCounts.txt 16925_5_S399_R1_e102_concat.trim.featureCounts.txt 16925_6_S400_R1_e103_concat.trim.featureCounts.txt; do     sed -i '1d' "$file"; done
+
+################################################################################################################# adding starting pattern of the file name as seven column name 
+
+for file in 16925_1_S395_R1_nt1_concat.trim.featureCounts.txt 16925_2_S396_R1_nt2_concat.trim.featureCounts.txt 16925_3_S397_R1_nt3_concat.trim.featureCounts.txt 16925_4_S398_R1_e101_concat.trim.featureCounts.txt 16925_5_S399_R1_e102_concat.trim.featureCounts.txt 16925_6_S400_R1_e103_concat.trim.featureCounts.txt; do
+    new_col_name="$(echo "$file" | cut -d'_' -f1,2)"
+    awk -v new_col_name="$new_col_name" 'BEGIN {FS=OFS="\t"} NR==1 {$7=new_col_name} {print}' "$file" > temp && mv temp "$file"
+done
+
+for file in *.txt; do
+    new_col_name="$(echo "$file" | cut -d'_' -f1,2,3)"
+    awk -v new_col_name="$new_col_name" 'BEGIN {FS=OFS="\t"} NR==1 {$7=new_col_name} {print}' "$file" > temp && mv temp "$file"
+done
+
+############################### final compiled output 
+#!/bin/bash
+
+# Initialize output file
+output_file="combined_output.txt"
+
+# Remove the output file if it exists
+rm -f "$output_file"
+
+# Loop through each .txt file
+for file in 16925_1_S395_R1_nt1_concat.trim.featureCounts.txt 16925_2_S396_R1_nt2_concat.trim.featureCounts.txt 16925_3_S397_R1_nt3_concat.trim.featureCounts.txt 16925_4_S398_R1_e101_concat.trim.featureCounts.txt 16925_5_S399_R1_e102_concat.trim.featureCounts.txt 16925_6_S400_R1_e103_concat.trim.featureCounts.txt; do
+    # Check if the output file exists
+    if [ -f "$output_file" ]; then
+        # Extract and merge data based on column 1
+        awk 'BEGIN {FS=OFS="\t"} NR==FNR {data[$1] = $0; next} {print $0, (data[$1] != "" ? data[$1] : "NA")}' "$file" "$output_file" > temp && mv temp "$output_file"
+    else
+        # If output file doesn't exist, just copy the current file
+        cp "$file" "$output_file"
+    fi
+done
 
 #screen########################################################################################################## decap 
 # conda envi
@@ -169,26 +282,6 @@ for file in *.txt; do
 done
 
 ################################################################################################################ Making final count table 
-
-#!/bin/bash
-
-# Initialize output file
-output_file="combined_output.txt"
-
-# Remove the output file if it exists
-rm -f "$output_file"
-
-# Loop through each .txt file
-for file in *.txt; do
-    # Check if the output file exists
-    if [ -f "$output_file" ]; then
-        # Extract and merge data based on column 1
-        awk 'BEGIN {FS=OFS="\t"} NR==FNR {data[$1] = $0; next} {print $0, (data[$1] != "" ? data[$1] : "NA")}' "$file" "$output_file" > temp && mv temp "$output_file"
-    else
-        # If output file doesn't exist, just copy the current file
-        cp "$file" "$output_file"
-    fi
-done
 
 
 ##### done on DEC18 
