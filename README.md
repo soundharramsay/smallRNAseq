@@ -5,6 +5,9 @@ eval "$(/home/sor4003/anaconda3/bin/conda shell.bash hook)"
 
 ################################################################################################## trimming 
 
+#remove 8N at start of sequence and trim 3' adapter​
+for file in *.gz; do cutadapt -u 8 -a NNNNAGATCGGAAGAGCACA -m 15 -o ${file/fastq.gz/trim.txt.gz} $file; done
+
 
 
 
