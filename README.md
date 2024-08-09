@@ -1,6 +1,9 @@
 
 ### test line 
 # smallRNAseq conda activate bowtie2
+eval "$(/home/sor4003/anaconda3/bin/conda shell.bash hook)"
+
+
 
 #screen########################################################################################################## decap 
 # conda envi
