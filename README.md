@@ -13,6 +13,25 @@ Read 2   AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
  I'm also interested in knowing what fraction of the total reads in each library map to the human genome, what fraction map to miRNAs, and what fraction map to other noncoding RNAs (tRNAs, snRNAs,etc). Additionally, we should be able to use the random Ns to determine the fraction of PCR duplicates in each library (e.g. by trimming off invariant adapter sequences and then comparing total number of reads before and after collapsing identical sequences (presumed PCR duplicates). If you could get this info to me by Thursday evening, that would really be helpful. Please let me know if that is feasible.
 
 trying nextflow
+######
+workflow 
+1. two datasets 
+     A) dataset_march11_2026 (folder-run_18_small_RNA_KIT_based_testing_BK)
+     B)  dataset_2024 (run_12_smallRNASeq_K562_after_cleaning_5ADAPT_Aug7_2024)
+2. Trimming desision
+     for dataset_march11_2026 will follow comapny suggested triming stragtegy
+     for datset_2024 use trimming as done manually by BEN
+
+3. Integrity check for dataset_march11_2026
+(env_nf) [sor4003@scu-login01 Kleaveland-BK-20536_2026_03_03]$ md5sum -c Kleaveland-BK-20536_2026_03_03.md5sum.source
+./K562_nt2_total_S112_L007_R1_001.fastq.gz: OK
+./K562_nt2_total_S112_L007_R2_001.fastq.gz: OK
+./K562_nt2_total_S112_L008_R1_001.fastq.gz: OK
+./K562_nt2_total_S112_L008_R2_001.fastq.gz: OK
+./K562_nt2_small_S113_L007_R1_001.fastq.gz: OK
+./K562_nt2_small_S113_L007_R2_001.fastq.gz: OK
+./K562_nt2_small_S113_L008_R1_001.fastq.gz: OK
+./K562_nt2_small_S113_L008_R2_001.fastq.gz: OK
 
 
 
