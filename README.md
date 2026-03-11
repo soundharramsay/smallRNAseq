@@ -1,3 +1,37 @@
+### small RNAseq March11-2026
+
+ would also like to start preparing small RNA libraries as soon as possible. Can I ask you to prioritize analyzing the two recently sequenced small RNA datasets (you received the link from Adrian) the same way that you analyzed the previous K562 small RNA datasets, generate a normalized count table that includes your original K562 nt1, nt2, and nt3 small RNA libraries and these two datasets (generated from the nt2 RNA sample), and share that with me. I am interested in knowing how well correlated the samples are to each other. 
+ 
+ Info on the samples I located in the attached file although they should already be demultiplexed. The kit that I used was the NEBNext low bias small RNA kit and there should be information on the website about how to trim the adapters (https://www.neb.com/en-us/products/e3420-nebnext-low-bias-small-rna-library-prep-kit?srsltid=AfmBOoq_n5rwGoUYUUqkIySWo9HneVDRoLL6-eifUBaWg-CE_VUn_yPN). In addition to the invariant adapter sequences, both the 5' and 3' adapter are supposed to have 4 random nucleotides. For mapping to miRNAs, you will need to remove these Ns.
+
+ ######FAQ: What are the sequences needed to trim the NEBNext Low-bias Small RNA libraries?
+The following sequences can be used to trim NEBNext Low-bias Small RNA libraries:
+
+Read 1   AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+Read 2   AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+ 
+ I'm also interested in knowing what fraction of the total reads in each library map to the human genome, what fraction map to miRNAs, and what fraction map to other noncoding RNAs (tRNAs, snRNAs,etc). Additionally, we should be able to use the random Ns to determine the fraction of PCR duplicates in each library (e.g. by trimming off invariant adapter sequences and then comparing total number of reads before and after collapsing identical sequences (presumed PCR duplicates). If you could get this info to me by Thursday evening, that would really be helpful. Please let me know if that is feasible.
+
+trying nextflow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### test line 
 
