@@ -138,7 +138,54 @@ mirna_gtf
 /home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/mirBASE/hsa_mirBase.gff3
 
 mature
-mature_mirBASE_all.fa
+/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/mirBASE/mature_mirBASE_all.fa
+
+########
+
+
+#!/bin/bash
+#SBATCH --job-name=smrnaseq
+#SBATCH --output=smrnaseq_%j.log
+#SBATCH --error=smrnaseq_%j.err
+#SBATCH --time=18:00:00
+#SBATCH --cpus-per-task=40
+#SBATCH --mem=200G
+#SBATCH --partition=scu-cpu
+
+# ── Environment ───────────────────────────────────────────────────────────────
+module load singularity
+source activate env_nf                  # your conda env with nextflow
+
+# ── Singularity cache ─────────────────────────────────────────────────────────
+export NXF_SINGULARITY_CACHEDIR=/athena/kleavelandlab/store/sor4003/singularity_cache
+mkdir -p "$NXF_SINGULARITY_CACHEDIR"
+
+# ── Working directory ─────────────────────────────────────────────────────────
+WORKDIR=/athena/kleavelandlab/store/sor4003/RNAseq_results_fastq/run_18_small_RNA_KIT_based_testing_BK/Kleaveland-BK-20536_2026_03_03
+cd "$WORKDIR" || exit 1
+
+# ── Local reference files ─────────────────────────────────────────────────────
+GENOME=/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/smallRNA_contamination_fasta/GRCh38.primary_assembly.genome.fa
+MIRNA_GTF=/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/mirBASE/hsa_mirBase.gff3
+MATURE=/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/mirBASE/mature_mirBASE_all.fa
+SAMPLESHEET=/home/sor4003/store_sor4003/RNAseq_results_fastq/run_18_small_RNA_KIT_based_testing_BK/Kleaveland-BK-20536_2026_03_03/3_samplesheet.csv
+NCRNA=/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/smallRNA_contamination_fasta/Homo_sapiens.GRCh38.ncrna.fa.gz
+
+# ── Run smrnaseq ──────────────────────────────────────────────────────────────
+nextflow run nf-core/smrnaseq \
+    -r 2.4.1 \
+    -profile singularity \
+    --input        "${SAMPLESHEET}" \
+    --outdir       "${WORKDIR}/results" \
+    --fasta        "${GENOME}" \
+    --mirna_gtf    "${MIRNA_GTF}" \
+    --mature       "${MATURE}" \
+    --mirtrace_species hsa \
+    --three_prime_adapter auto-detect \
+    --filter_contamination \
+    --ncrna  "${NCRNA}" \
+    -work-dir "${WORKDIR}/work" \
+    -resume
 
 
 
