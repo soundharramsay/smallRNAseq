@@ -33,6 +33,44 @@ workflow
 ./K562_nt2_small_S113_L008_R1_001.fastq.gz: OK
 ./K562_nt2_small_S113_L008_R2_001.fastq.gz: OK
 
+4. test run
+   Completed at: 11-Mar-2026 14:28:15
+Duration    : 4m 28s
+CPU hours   : 1.6
+Succeeded   : 244
+
+#!/bin/bash
+#SBATCH --job-name=smrnaseq
+#SBATCH --output=smrnaseq_%j.log
+#SBATCH --error=smrnaseq_%j.err
+#SBATCH --time=18:00:00
+#SBATCH --cpus-per-task=40
+#SBATCH --mem=200G
+#SBATCH --partition=scu-cpu
+
+# ── Environment setup ────────────────────────────────────────────────────────
+module load singularity
+module load nextflow      # remove if nextflow is managed via conda
+
+# Activate conda env if nextflow is installed there
+# source activate env_nf   # uncomment if needed
+
+# ── Singularity cache (shared lab cache to avoid re-downloading images) ──────
+export NXF_SINGULARITY_CACHEDIR=/athena/kleavelandlab/store/sor4003/singularity_cache
+mkdir -p "$NXF_SINGULARITY_CACHEDIR"
+
+# ── Working directory ─────────────────────────────────────────────────────────
+WORKDIR=/athena/kleavelandlab/store/sor4003/RNAseq_results_fastq/run_18_small_RNA_KIT_based_testing_BK/Kleaveland-BK-20536_2026_03_03
+cd "$WORKDIR" || exit 1
+
+# ── Run smrnaseq ──────────────────────────────────────────────────────────────
+nextflow run nf-core/smrnaseq \
+    -r 2.4.1 \
+    -profile test,singularity \
+    --outdir test_march11 \
+
+
+
 
 
 
