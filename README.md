@@ -70,6 +70,64 @@ nextflow run nf-core/smrnaseq \
     --outdir test_march11 \
 
 
+ 5. merge lane wise in fastq file
+
+#!/bin/bash
+#SBATCH --job-name=merge_fastq
+#SBATCH --output=merge_fastq_%j.log
+#SBATCH --error=merge_fastq_%j.err
+#SBATCH --time=02:00:00
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
+#SBATCH --partition=scu-cpu
+
+# ── Directories ───────────────────────────────────────────────────────────────
+INDIR=/athena/kleavelandlab/store/sor4003/RNAseq_results_fastq/run_18_small_RNA_KIT_based_testing_BK/Kleaveland-BK-20536_2026_03_03
+OUTDIR="${INDIR}/merged"
+mkdir -p "$OUTDIR"
+
+echo "Starting lane merging: $(date)"
+
+# ── Merge K562_nt2_small (S113) ───────────────────────────────────────────────
+echo "Merging K562_nt2_small R1..."
+cat "${INDIR}/K562_nt2_small_S113_L007_R1_001.fastq.gz" \
+    "${INDIR}/K562_nt2_small_S113_L008_R1_001.fastq.gz" \
+    > "${OUTDIR}/K562_nt2_small_R1.fastq.gz"
+
+echo "Merging K562_nt2_small R2..."
+cat "${INDIR}/K562_nt2_small_S113_L007_R2_001.fastq.gz" \
+    "${INDIR}/K562_nt2_small_S113_L008_R2_001.fastq.gz" \
+    > "${OUTDIR}/K562_nt2_small_R2.fastq.gz"
+
+# ── Merge K562_nt2_total (S112) ───────────────────────────────────────────────
+echo "Merging K562_nt2_total R1..."
+cat "${INDIR}/K562_nt2_total_S112_L007_R1_001.fastq.gz" \
+    "${INDIR}/K562_nt2_total_S112_L008_R1_001.fastq.gz" \
+    > "${OUTDIR}/K562_nt2_total_R1.fastq.gz"
+
+echo "Merging K562_nt2_total R2..."
+cat "${INDIR}/K562_nt2_total_S112_L007_R2_001.fastq.gz" \
+    "${INDIR}/K562_nt2_total_S112_L008_R2_001.fastq.gz" \
+    > "${OUTDIR}/K562_nt2_total_R2.fastq.gz"
+
+# ── Verify output file sizes ──────────────────────────────────────────────────
+echo ""
+echo "Merged file sizes:"
+ls -lh "$OUTDIR"
+
+# ── Verify read counts match (optional sanity check) ─────────────────────────
+echo ""
+echo "Read count check (lines/4 = reads):"
+for f in "$OUTDIR"/*.fastq.gz; do
+    count=$(zcat "$f" | wc -l)
+    reads=$((count / 4))
+    echo "  $(basename $f): ${reads} reads"
+done
+
+echo ""
+echo "Done: $(date)"
+
+
 
    
 
