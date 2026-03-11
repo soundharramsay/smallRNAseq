@@ -69,7 +69,7 @@ nextflow run nf-core/smrnaseq \
     -profile test,singularity \
     --outdir test_march11 \
 
-
+##############################
  5. merge lane wise in fastq file
 
 #!/bin/bash
@@ -126,6 +126,24 @@ done
 
 echo ""
 echo "Done: $(date)"
+
+
+
+
+#########################
+genome 
+/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/smallRNA_contamination_fasta/GRCh38.primary_assembly.genome.fa
+
+mirna_gtf
+/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/mirBASE/hsa_mirBase.gff3
+
+mature
+mature_mirBASE_all.fa
+
+
+
+
+
 
 
 
