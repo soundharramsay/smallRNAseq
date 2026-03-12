@@ -187,6 +187,229 @@ nextflow run nf-core/smrnaseq \
     -work-dir "${WORKDIR}/work" \
     -resume
 
+##############################
+##############################
+##############################
+##############################
+##############################
+##############################
+############################## DESEQ
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DESeq2 Analysis: ZSWIM8-KO (e101/e102/e103) vs Control (nt1/nt2/nt3)
+# MA Plot: x = mean abundance, y = log2 fold change
+# hsa-miR-7-5p = black, hsa-miR-7-1-3p = green
+# ─────────────────────────────────────────────────────────────────────────────
+
+library(DESeq2)
+library(ggplot2)
+library(dplyr)
+library(ggrepel)
+library(tibble)
+
+# ── 1. Load and reshape count matrix ─────────────────────────────────────────
+raw <- read.csv("mature_counts.csv", row.names = 1, check.names = TRUE)
+
+counts_raw <- as.data.frame(t(raw))
+rownames(counts_raw) <- gsub("\\.", "-", rownames(counts_raw))
+
+cat("Sample names detected:\n")
+print(colnames(counts_raw))
+
+counts_raw <- counts_raw[, c("nt1", "nt2", "nt3", "e101", "e102", "e103")]
+cat("\nDimensions (miRNAs x samples):", nrow(counts_raw), "x", ncol(counts_raw), "\n")
+
+# ── 2. Sample metadata ────────────────────────────────────────────────────────
+coldata <- data.frame(
+  condition = factor(c("control", "control", "control",
+                       "ZSWIM8_KO", "ZSWIM8_KO", "ZSWIM8_KO"),
+                     levels = c("control", "ZSWIM8_KO")),
+  row.names = colnames(counts_raw)
+)
+
+# ── 3. DESeq2 ────────────────────────────────────────────────────────────────
+dds <- DESeqDataSetFromMatrix(
+  countData = round(as.matrix(counts_raw)),
+  colData   = coldata,
+  design    = ~ condition
+)
+
+keep <- rowSums(counts(dds) >= 0) >= 3
+dds  <- dds[keep, ]
+cat("miRNAs after filtering:", nrow(dds), "\n")
+
+dds <- DESeq(dds)
+
+# ── 4. Results ────────────────────────────────────────────────────────────────
+res <- results(dds,
+               contrast = c("condition", "ZSWIM8_KO", "control"),
+               alpha    = 0.05)
+summary(res)
+
+res_df <- as.data.frame(res) %>% rownames_to_column("miRNA")
+write.csv(res_df, "DESeq2_ZSWIM8KO_vs_control_results.csv", row.names = FALSE)
+cat("Results saved: DESeq2_ZSWIM8KO_vs_control_results.csv\n")
+
+# ── 5. Prepare plot data ──────────────────────────────────────────────────────
+plot_df <- res_df %>%
+  filter(!is.na(log2FoldChange), !is.na(padj)) %>%
+  mutate(
+    significance = case_when(
+      grepl("^hsa-miR-7-5p$",   miRNA) ~ "hsa-miR-7-5p",
+      grepl("^hsa-miR-7-1-3p$", miRNA) ~ "hsa-miR-7-1-3p",
+      padj < 0.05 & log2FoldChange >  1 ~ "Up",
+      padj < 0.05 & log2FoldChange < -1 ~ "Down",
+      TRUE                               ~ "NS"
+    )
+  )
+
+# ── 6. MA Plot ────────────────────────────────────────────────────────────────
+ma_plot <- ggplot(plot_df, aes(x = log10(baseMean + 1), y = log2FoldChange)) +
+  
+  geom_point(aes(color = significance), size = 1, alpha = 0.6) +
+  
+  scale_color_manual(
+    values = c(
+      "hsa-miR-7-5p"   = "black",
+      "hsa-miR-7-1-3p" = "green3",
+      "Up"             = "#E41A1C",
+      "Down"           = "#377EB8",
+      "NS"             = "grey70"
+    ),
+    name = ""
+  ) +
+  
+  geom_text_repel(
+    data              = filter(plot_df, grepl("^hsa-miR-7-5p$|^hsa-miR-7-1-3p$", miRNA)),
+    aes(label         = miRNA),
+    size              = 3.5,
+    color             = "black",
+    box.padding       = 0.8,
+    max.overlaps      = Inf,
+    min.segment.length = 0,
+    segment.color     = "grey40",
+    segment.size      = 0.3
+  ) +
+  
+  geom_hline(yintercept = 0,        linetype = "solid",  color = "black",  linewidth = 0.4) +
+  geom_hline(yintercept = c(-1, 1), linetype = "dashed", color = "grey50", linewidth = 0.3) +
+  
+  labs(
+    title = "MA Plot: ZSWIM8-KO vs Control",
+    x     = "Mean Abundance (log10 baseMean + 1)",
+    y     = "Log2 Fold Change (KO / Control)"
+  ) +
+  
+  theme_classic(base_size = 13) +
+  theme(
+    plot.title      = element_text(face = "bold", size = 13),
+    legend.position = "top"
+  )
+
+ggsave("MA_plot_ZSWIM8KO_vs_control.pdf", ma_plot, width = 8, height = 6, dpi = 300)
+ggsave("MA_plot_ZSWIM8KO_vs_control.png", ma_plot, width = 8, height = 6, dpi = 300)
+cat("MA plot saved\n")
+
+
+
+################# append following 
+setwd("~/Desktop/mapping_results_march12_2026/mirna_quant/edger_qc")
+
+raw <- read.csv("mature_counts.csv", row.names = 1, check.names = TRUE)
+mature_log_tpm <- read.csv("./mature_logtpm.csv", row.names=1, check.names = TRUE)
+deseq <- read.csv("./DESeq2_ZSWIM8KO_vs_control_results.csv",row.names = 1, check.names = TRUE)
+
+
+
+
+
+#############
+
+
+
+
+# ── Prepare raw counts ────────────────────────────────────────────────────────
+# raw: 8 samples x 2086 miRNAs — transpose and fix names
+raw_t <- as.data.frame(t(raw))
+rownames(raw_t) <- gsub("\\.", "-", rownames(raw_t))
+colnames(raw_t) <- paste0("count_", colnames(raw_t))  # prefix to avoid name clash
+raw_t$miRNA <- rownames(raw_t)
+
+# ── Prepare log TPM ───────────────────────────────────────────────────────────
+# mature_log_tpm: 8 samples x 2086 miRNAs — transpose and fix names
+tpm_t <- as.data.frame(t(mature_log_tpm))
+rownames(tpm_t) <- gsub("\\.", "-", rownames(tpm_t))
+colnames(tpm_t) <- paste0("logTPM_", colnames(tpm_t))  # prefix to avoid name clash
+tpm_t$miRNA <- rownames(tpm_t)
+
+# ── Prepare DESeq2 results ────────────────────────────────────────────────────
+# deseq already has miRNAs as rownames
+deseq_df <- deseq %>% rownames_to_column("miRNA")
+
+# ── Merge all three by miRNA ──────────────────────────────────────────────────
+merged <- deseq_df %>%
+  left_join(raw_t,  by = "miRNA") %>%
+  left_join(tpm_t,  by = "miRNA") %>%
+  arrange(padj)
+
+cat("Merged dimensions:", nrow(merged), "x", ncol(merged), "\n")
+cat("Columns:\n")
+print(colnames(merged))
+
+# ── Save ──────────────────────────────────────────────────────────────────────
+write.csv(merged, "merged_DESeq2_counts_logTPM.csv", row.names = FALSE)
+cat("Saved: merged_DESeq2_counts_logTPM.csv\n")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
 
 
 
