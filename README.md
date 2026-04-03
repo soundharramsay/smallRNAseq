@@ -7,12 +7,48 @@
 >> Read 1   AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
 >> Read 2   AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT  --- also remove the 4N clipping because the company personnel said the following ------ 	
  
-Dear Benjamin,
+"""""Dear Benjamin,
 
 Those traces look pretty normal. You said you used the bead-based cleanup approach (Section 8B), right? I think its still a good idea to check the insert size you are getting and perhaps the integrity of your total RNA now, if you rerun a fragment analysis.
+There are random bases on the adaptor. There is no additional trimming beyond the adaptor sequences that are supplied in the manual. These are removed during library prep.""""""""
 
 
-There are random bases on the adaptor. There is no additional trimming beyond the adaptor sequences that are supplied in the manual. These are removed during library prep.
+#!/bin/bash
+#SBATCH --job-name=smrnaseq
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16        # total CPUs for Nextflow
+#SBATCH --mem=32G
+#SBATCH --time=12:00:00
+#SBATCH --output=nextflow_%j.log
+
+# Load SDKMAN Java (or your Java 17)
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+sdk use java 17.0.10-tem
+
+# Set singularity cache directory (optional, to avoid warning)
+export NXF_SINGULARITY_CACHEDIR=/athena/kleavelandlab/store/sor4003/singularity_cache
+
+# Go to work directory
+cd /athena/kleavelandlab/store/sor4003/RNAseq_results_fastq/run_18_small_RNA_KIT_based_testing_BK/Kleaveland-BK-20536_2026_03_03
+
+# Run pipeline (no --max_cpus/--max_memory)
+nextflow run nf-core/smrnaseq \
+    -r 2.4.1 \
+    -profile singularity \
+    --input "5_rerun_april3_samplesheet_KIT_based.csv" \
+    --outdir "results_april3" \
+    --fasta "/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/smallRNA_contamination_fasta/GRCh38.primary_assembly.genome.fa" \
+    --mirna_gtf "/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/mirBASE/hsa_mirBase.gff3" \
+    --mature "/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/mirBASE/mature_mirBASE_all.fa" \
+    --mirtrace_species hsa \
+    --three_prime_adapter AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
+    --filter_contamination \
+    --ncrna "/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/smallRNA_contamination_fasta/Homo_sapiens.GRCh38.ncrna.fa.gz" \
+    --save_reference \
+    -work-dir "work_april3" \
+    -resume
+
 
 
 
