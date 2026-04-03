@@ -1,3 +1,31 @@
+####### April 3 -- rerun 
+
+>> In my previous run I used option of auto-detector for adaptor, plus 4N clipping
+>> Nextflow auto-detcetion detected a wrong adaptor  (TGGAATTCTCGGGTGCCAAGG)
+>> actuall detected to be trimmed is
+
+>> Read 1   AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+>> Read 2   AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT  --- also remove the 4N clipping because the company personnel said the following ------ 	
+ 
+Dear Benjamin,
+
+Those traces look pretty normal. You said you used the bead-based cleanup approach (Section 8B), right? I think its still a good idea to check the insert size you are getting and perhaps the integrity of your total RNA now, if you rerun a fragment analysis.
+
+
+There are random bases on the adaptor. There is no additional trimming beyond the adaptor sequences that are supplied in the manual. These are removed during library prep.
+
+
+
+
+
+
+
+
+
+
+
+
+
 ### small RNAseq March11-2026
 
  would also like to start preparing small RNA libraries as soon as possible. Can I ask you to prioritize analyzing the two recently sequenced small RNA datasets (you received the link from Adrian) the same way that you analyzed the previous K562 small RNA datasets, generate a normalized count table that includes your original K562 nt1, nt2, and nt3 small RNA libraries and these two datasets (generated from the nt2 RNA sample), and share that with me. I am interested in knowing how well correlated the samples are to each other. 
