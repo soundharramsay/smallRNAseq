@@ -1,3 +1,106 @@
+
+
+#### April23-2026
+#### First 6 samples are DIV12 iNeurons, the next 6 are H9 ESCs
+#### user request trimmed fastq
+
+1#### md5sum check 
+
+./1_S1323_L008_R1_001.fastq.gz: OK
+./2_S1324_L008_R1_001.fastq.gz: OK
+./3_S1325_L008_R1_001.fastq.gz: OK
+./4_S1326_L008_R1_001.fastq.gz: OK
+./5_S1327_L008_R1_001.fastq.gz: OK
+./6_S1328_L008_R1_001.fastq.gz: OK
+./7_S1329_L008_R1_001.fastq.gz: OK
+./8_S1330_L008_R1_001.fastq.gz: OK
+./9_S1331_L008_R1_001.fastq.gz: OK
+./10_S1332_L008_R1_001.fastq.gz: OK
+./11_S1333_L008_R1_001.fastq.gz: OK
+./12_S1334_L008_R1_001.fastq.gz: OK
+
+
+#########Rename 
+
+for n in {1..6}; do
+    for f in ${n}_S*.fastq.gz; do
+        mv "$f" "${f/${n}_/${n}_iN_}"
+    done
+done
+
+for n in {7..12}; do
+    for f in ${n}_S*.fastq.gz; do
+        mv "$f" "${f/${n}_/${n}_esc_}"
+    done
+done
+
+
+############ count miR-7 in fastq files 
+for f in *.fastq.gz; do
+    count=$(zcat "$f" | awk 'NR%4==2' | grep -o 'TGGAAGACTAGTGATTTTGTTGTT' | wc -l)
+    echo "$f: $count"
+done
+
+#######results
+1-3 & 7-9 are non-tag
+
+10_esc_S1332_L008_R1_001.fastq.gz: 267
+11_esc_S1333_L008_R1_001.fastq.gz: 83
+12_esc_S1334_L008_R1_001.fastq.gz: 371
+1_iN_S1323_L008_R1_001.fastq.gz: 1276
+2_iN_S1324_L008_R1_001.fastq.gz: 916
+3_iN_S1325_L008_R1_001.fastq.gz: 1410
+4_iN_S1326_L008_R1_001.fastq.gz: 5895
+5_iN_S1327_L008_R1_001.fastq.gz: 8117
+6_iN_S1328_L008_R1_001.fastq.gz: 3891
+7_esc_S1329_L008_R1_001.fastq.gz: 247
+8_esc_S1330_L008_R1_001.fastq.gz: 145
+9_esc_S1331_L008_R1_001.fastq.gz: 229
+
+
+##### sample sheet
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ####### April 3 -- rerun 
 
 >> In my previous run I used option of auto-detector for adaptor, plus 4N clipping
