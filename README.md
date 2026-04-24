@@ -58,7 +58,66 @@ done
 9_esc_S1331_L008_R1_001.fastq.gz: 229
 
 
-##### sample sheet
+Sample sheet.csv  ----example 
+sample,fastq_1
+iN_p3_nt_c1,./1_iN_nt_S1323_L008_R1_001.fastq.gz
+iN_p3_nt_c2,./2_iN_nt_S1324_L008_R1_001.fastq.gz
+iN_p3_nt_c3,./3_iN_nt_S1325_L008_R1_001.fastq.gz
+iN_p3_e13_c1,./4_iN_Z8KO_S1326_L008_R1_001.fastq.gz
+iN_p3_e13_c2,./5_iN_Z8KO_S1327_L008_R1_001.fastq.gz
+iN_p3_e13_c3,./6_iN_Z8KO_S1328_L008_R1_001.fastq.gz
+H9_p1_nt_c1,./7_esc_nt_S1329_L008_R1_001.fastq.gz
+H9_p1_nt_c2,./8_esc_nt_S1330_L008_R1_001.fastq.gz
+H9_p1_nt_c3,./9_esc_nt_S1331_L008_R1_001.fastq.gz
+H9_p1_e13_c1,./10_esc_Z8KO_S1332_L008_R1_001.fastq.gz
+H9_p1_e13_c2,./11_esc_Z8KO_S1333_L008_R1_001.fastq.gz
+H9_p1_e13_c3,./12_esc_Z8KO_S1334_L008_R1_001.fastq.gz
+
+
+#################### script
+#!/bin/bash
+#SBATCH --job-name=smrnaseq_run21
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=32G
+#SBATCH --time=40:00:00
+#SBATCH --output=nextflow_%j.log
+
+# Load Java 17
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+sdk use java 17.0.10-tem
+
+# Singularity cache
+export NXF_SINGULARITY_CACHEDIR=/athena/kleavelandlab/store/sor4003/singularity_cache
+
+# Go to the directory containing your FASTQ files and samplesheet
+cd /home/sor4003/store_sor4003/RNAseq_results_fastq/run_21_iNeuron_H9_ESCs_smallRNA_radiosizeselect_plus_KIT/Kleaveland-BK-20795_2026_04_15
+
+# Run nf-core/smrnaseq
+nextflow run nf-core/smrnaseq \
+    -r 2.4.1 \
+    -profile singularity \
+    --input "1_sample_sheet.csv" \
+    --outdir "iNeuron_Apr23_2026" \
+    --fasta "/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/smallRNA_contamination_fasta/GRCh38.primary_assembly.genome.fa" \
+    --mirna_gtf "/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/mirBASE/hsa_mirBase.gff3" \
+    --mature "/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/mirBASE/mature_mirBASE_all.fa" \
+    --mirtrace_species hsa \
+    --three_prime_adapter AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
+    --filter_contamination \
+    --ncrna "/home/sor4003/store_sor4003/2_star_genome_index_nexflow/small_RNA_genomes/smallRNA_contamination_fasta/Homo_sapiens.GRCh38.ncrna.fa.gz" \
+    --save_reference \
+    --save_intermediates \
+    -work-dir 
+    -resume
+
+
+
+
+
+
+           
 
 
 
