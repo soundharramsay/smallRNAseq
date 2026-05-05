@@ -64,7 +64,28 @@ cutadapt version 5.2
 conda install bioconda::fastqc
 >>FastQC v0.12.1
 
-### 
+## conda install bioconda::fastqc
+>>> FASTX Toolkit 0.0.14
+
+
+## conda install -c conda-forge pandas matplotlib numpy -y 
+for plotting 
+
+
+####
+
+mkdir -p fastqc_raw fastqc_trim length_stats logs plots raw_fastq trimmed
+
+for file in *.fastq.gz; do
+    base=$(basename $file .fastq.gz)
+
+    cutadapt \
+        -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
+        -m 15 \
+        -o ${base}_trim.fastq.gz \
+        $file
+
+done
 
  
  
