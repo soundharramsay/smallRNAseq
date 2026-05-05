@@ -1,5 +1,104 @@
 
 
+### small RNA-seq manual counting 
+
+May5 
+
+Hi Soundhar (and Nick),
+
+I would like us to analyze the small RNA seq using the following approach or something similar:
+
+Reads were trimmed of adaptor sequence using cutadapt and filtered using fastq_quality_filter (FastX Toolkit; http://hannonlab.cshl.edu/fastx_toolkit/) with the parameters “-q 30 –p 100” to ensure that all bases had an accuracy of 99.9%. These are the unix commands that I used:
+
+###for trimming adapter sequences from NEB
+#batch trim 3’ adapter using cutadapt AND tossing empty entries (-m 15 option)
+for file in *.gz; do cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -m 15 -o ${file/allfiles-zcat.fastq.gz/trim.txt.gz} $file; done
+
+#batch quality filter, high stringency
+for file in *-trim.txt.gz; do bsub "zcat $file | fastq_quality_filter -v -q 30 -p 100 -Q 64 -z -o ${file/trim/trim_q30}"; done
+
+If you prefer to use nf-core for the steps above, that is fine with me. Either way, it is good to run fastqc on both raw and trimmed files.
+
+The first 19 nt of each read were matched to a dictionary of miRNA sequences downloaded from TargetScanMouse Release 8, requiring no mismatches between the read and the miRNA dictionary. I have attached an excel file that contains that downloaded data, as well as separate tabs for human miRNAs and mouse miRNAs. These miRNA lists are derived from mirbase but also include some 5' isomers. Column F indicates whether the miRNAs is highly conserved miRNAs ("2"), moderately conserved ("1"), poorly conserved but confidently annotated ("0"), ort not confidently annotated ("-1"). I would like you to count miRNA reads using the full list so that we can compare the total # of counts assigned to all miRNAs versus confidently annotated miRNAs. The 5' isomer annotations are not exhaustive so I manually added the most abundant 5' isomers in Soundhar's H9 and iN samples based on overrepresented sequences from fastqc (red text). @Nickolas Almodovar, we can consider adding abundant 5' isomers to your annotation file if we find any in the overrepresented sequences (fastqc), but to begin, I would just use the list provided in this excel file. Because the 5' isomers have shifted, and thus different, seed sequences, their counts should not be summed with the "parental" miRNA counts. I don't think that the 5' isomers are caused by the library prep because the xenopus and drosophila miRNA spike-ins added to Soundhar's samples do not show any 5' isomers. I also went ahead and generated dictionaries for each species, combining any miRNAs that shared the same first 19nt into a single annotation. These are located in the uniq19_dictionary tabs.
+
+I've also attached the python2.7 script that I used to count miRNAs reads based on a species-specific dictionary. Please update as needed. The input is a text file with only the trimmed reads (no other fastq information) which can be generated with the following command:
+
+#batch fastq to reads only txt file
+for file in *trim.fastq.gz; do zcat $file | sed -n '2~4p' > ${file/allfiles-zcat-trim.fastq.gz/reads.txt}; done
+
+The way it is currently written, the dictionary needs to be in the same directory (which I liked because then I knew exactly which miRNA sequences were used for counting).
+
+Reads mapping to the spike-in miRNAs were counted using the following commands:
+
+#script for counting spike-ins and outputting to txt file
+for file in *_sequence.txt.gz; do echo `zcat $file | grep -c GAAAGTGCTTTCTGTTTTGGGCG` $file >> xtr-427_counts.txt; done &
+for file in *_sequence.txt.gz; do echo `zcat $file | grep -c GGGAGCGAGACGGGGACTCACT` $file >> dme-14_counts.txt; done &
+
+It is good to look at the spike-in counts and determine what fraction of the total library counts are derived from the spike-ins. In theory, this fraction should be similar across all samples from the same cell line or tissue that. Spike-in counts representing a larger fraction of the library would occur if the total RNA concentration was incorrect or if the total RNA is depleted of small RNAs.
+
+Differential expression analysis was performed using DESeq2 v1.38.3 without the lfcShrink() function. Counts per million (CPM) were calculated by summing across DESeq2 normalized miRNA counts within each sample, then multiplying by 10^6.
+
+Let me know if you have any questions.
+
+
+
+Soundhar 
+
+###1 Processing all the NEB Kit based preparation 
+
+
+file 1 - KIT based library by size selection + kit based library prepearation 
+file 2 - Radioactivity based size selection + kit based library preparation
+
+
+
+# create environment + install cutadapt
+ conda create -n small_rna_seq cutadapt
+
+### activate enviroment
+ conda activate small_rna_seq 
+ >> cutadapt 
+cutadapt version 5.2
+
+### fatsqc
+conda install bioconda::fastqc
+>>FastQC v0.12.1
+
+### 
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #### April23-2026
 #### First 6 samples are DIV12 iNeurons, the next 6 are H9 ESCs
 #### user request trimmed fastq
