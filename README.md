@@ -70,29 +70,434 @@ conda install bioconda::fastqc
 
 ## conda install -c conda-forge pandas matplotlib numpy -y 
 for plotting 
+## verify installation 
+python -c "import pandas, matplotlib; print('OK')"
 
 
 ####
 
 mkdir -p fastqc_raw fastqc_trim length_stats logs plots raw_fastq trimmed
 
-for file in *.fastq.gz; do
+####################################################################################################################################### bash script 1_fastqc_cutadapt.sh
+
+#!/bin/bash
+
+set -euo pipefail
+
+############################################
+# SETTINGS
+############################################
+
+THREADS=8
+ADAPTER="AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"
+MINLEN=15
+
+RAW_DIR="raw_fastq"
+
+FASTQC_RAW="fastqc_raw"
+FASTQC_TRIM="fastqc_trim"
+TRIM_DIR="trimmed"
+LENGTH_DIR="length_stats"
+PLOT_DIR="plots"
+LOG_DIR="logs"
+
+############################################
+# CHECK INPUT
+############################################
+
+if [ ! -d "$RAW_DIR" ]; then
+    echo "ERROR: raw FASTQ directory '$RAW_DIR' not found"
+    exit 1
+fi
+
+############################################
+# STEP 1 — FASTQC (RAW)
+############################################
+
+echo "Running FastQC on RAW..."
+
+mkdir -p $FASTQC_RAW
+
+for file in ${RAW_DIR}/*.fastq.gz; do
+    fastqc -t $THREADS -o $FASTQC_RAW $file
+done
+
+############################################
+# STEP 2 — CUTADAPT
+############################################
+
+echo "Running cutadapt..."
+
+mkdir -p $TRIM_DIR $LOG_DIR
+
+for file in ${RAW_DIR}/*.fastq.gz; do
+    base=$(basename $file .fastq.gz)
+    out=${TRIM_DIR}/${base}_trim.fastq.gz
+
+    if [ ! -f "$out" ]; then
+        cutadapt \
+            -a $ADAPTER \
+            -m $MINLEN \
+            -o $out \
+            $file \
+            > ${LOG_DIR}/${base}_cutadapt.log
+    else
+        echo "Skipping trimming for $base"
+    fi
+done
+
+############################################
+# STEP 3 — FASTQC (TRIMMED)
+############################################
+
+echo "Running FastQC on TRIMMED..."
+
+mkdir -p $FASTQC_TRIM
+
+for file in ${TRIM_DIR}/*.fastq.gz; do
+    fastqc -t $THREADS -o $FASTQC_TRIM $file
+done
+
+############################################
+# STEP 4 — LENGTH DISTRIBUTION
+############################################
+
+echo "Computing length distributions..."
+
+mkdir -p $LENGTH_DIR
+
+for file in ${RAW_DIR}/*.fastq.gz; do
     base=$(basename $file .fastq.gz)
 
-    cutadapt \
-        -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
-        -m 15 \
-        -o ${base}_trim.fastq.gz \
-        $file
+    # BEFORE
+    before_out=${LENGTH_DIR}/${base}_before.txt
+    if [ ! -f "$before_out" ]; then
+        zcat $file | awk 'NR%4==2 {print length($0)}' \
+            | sort | uniq -c \
+            | awk -v s=$base '{print s"\tBEFORE\t"$2"\t"$1}' \
+            > $before_out
+    fi
+
+    # AFTER
+    after_file=${TRIM_DIR}/${base}_trim.fastq.gz
+    after_out=${LENGTH_DIR}/${base}_after.txt
+
+    if [ ! -f "$after_out" ]; then
+        zcat $after_file | awk 'NR%4==2 {print length($0)}' \
+            | sort | uniq -c \
+            | awk -v s=$base '{print s"\tAFTER\t"$2"\t"$1}' \
+            > $after_out
+    fi
 
 done
 
- 
- 
+############################################
+# STEP 5 — MERGE TABLE
+############################################
+
+cat ${LENGTH_DIR}/*_before.txt ${LENGTH_DIR}/*_after.txt \
+    > ${LENGTH_DIR}/all_samples_length_distribution.tsv
+
+############################################
+# STEP 6 — PLOT
+############################################
+
+echo "Generating plot..."
+
+mkdir -p $PLOT_DIR
+
+cat << 'EOF' > plot_length_v3.py
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv(
+    "length_stats/all_samples_length_distribution.tsv",
+    sep="\t",
+    names=["sample", "stage", "length", "count"]
+)
+
+df["stage"] = df["stage"].str.strip().str.upper()
+df["length"] = pd.to_numeric(df["length"])
+df["count"] = pd.to_numeric(df["count"])
+
+df = df.groupby(["stage", "length"])["count"].sum().reset_index()
+
+before = df[df["stage"] == "BEFORE"].copy()
+after = df[df["stage"] == "AFTER"].copy()
+
+before = before.sort_values("length")
+after = after.sort_values("length")
+
+print("BEFORE rows:", len(before))
+print(before.head())
+
+plt.figure(figsize=(10,6))
+
+plt.plot(before["length"], before["count"], marker='o', label="Before trimming")
+plt.plot(after["length"], after["count"], marker='o', label="After trimming")
+
+plt.xlabel("Read length (nt)")
+plt.ylabel("Read count")
+plt.title("Small RNA-seq Read Length Distribution")
+plt.legend()
+
+plt.savefig("plots/length_distribution_v3.png", dpi=300)
+plt.savefig("plots/length_distribution_v3.pdf")
+EOF
+
+# check dependencies
+python -c "import pandas, matplotlib" 2>/dev/null || {
+    echo "ERROR: pandas/matplotlib missing"
+    echo "Run: conda install -c conda-forge pandas matplotlib"
+    exit 1
+}
+
+# run plot only if not exists
+if [ ! -f "plots/length_distribution_v3.png" ]; then
+    python plot_length_v3.py
+else
+    echo "Skipping plot (already exists)"
+fi
+
+############################################
+# DONE
+############################################
+
+echo "PIPELINE COMPLETE"
+echo ""
+echo "Outputs:"
+echo " fastqc_raw/"
+echo " fastqc_trim/"
+echo " trimmed/"
+echo " length_stats/"
+echo " plots/"
+echo " logs/"
+
+
+####################################################################################################################################### 
+
+output file 
+
+fastqc_raw
+fastqc_trim
+length_stats
+trimmed
 
 
 
 
+
+
+
+
+#######################################################################################################################################  2_q_filtering.sh
+
+
+FASTX tries to decode quality like this:
+
+Encoding	ASCII range
+Phred+33	33–73
+Phred+64	64–104  
+
+#batch quality filter, high stringency
+for file in *-trim.txt.gz; do bsub "zcat $file | fastq_quality_filter -v -q 30 -p 100 -Q 64 -z -o ${file/trim/trim_q30}"; done
+
+# encoding change 
+for file in *-trim.txt.gz; do bsub "zcat $file | fastq_quality_filter -v -q 30 -p 100 -Q 33 -z -o ${file/trim/trim_q30}"; done
+
+
+####################################################################################################################################### 
+
+#!/bin/bash
+
+set -euo pipefail
+
+############################################
+# INPUT / OUTPUT
+############################################
+
+IN_DIR="trimmed"
+OUT_DIR="trimmed_q_filtered"
+SUMMARY="read_count_before_after_q30.txt"
+
+mkdir -p $OUT_DIR
+
+echo -e "sample\tbefore_reads\tafter_reads" > $SUMMARY
+
+############################################
+# LOOP
+############################################
+
+for file in ${IN_DIR}/*.fastq.gz; do
+
+    base=$(basename $file .fastq.gz)
+
+    echo "Processing $base"
+
+    ########################################
+    # COUNT BEFORE
+    ########################################
+
+    before=$(zcat $file | awk 'END {print NR/4}')
+
+    ########################################
+    # FILTER (YOUR EXACT COMMAND)
+    ########################################
+
+    out=${OUT_DIR}/${base}_trim_q30.fastq.gz
+
+    zcat $file | fastq_quality_filter \
+        -v \
+        -q 30 \
+        -p 100 \
+        -Q 33 \
+        -z \
+        -o $out
+
+    ########################################
+    # COUNT AFTER
+    ########################################
+
+    after=$(zcat $out | awk 'END {print NR/4}')
+
+    ########################################
+    # SAVE SUMMARY
+    ########################################
+
+    echo -e "${base}\t${before}\t${after}" >> $SUMMARY
+
+done
+
+echo "DONE"
+echo "Filtered FASTQs → $OUT_DIR"
+echo "Summary → $SUMMARY"
+
+####################################################################################################################################### 
+
+output - trimmed_q_filter 
+
+
+
+####################################################################################################################################### 3_counting_miRNA.sh
+
+
+The below script convert the fastq > text file, then counts the miRNA using python script (miRNA_19mer_count_pipeline.py), it also need the miRNA dictionary in .txt format within the directory named as miRNA_dictonary. 
+
+
+#######################################################################################################################################
+
+
+#!/bin/bash
+
+set -euo pipefail
+
+########################################################
+# SMALL RNA-seq FULL PIPELINE + MERGED MATRIX
+########################################################
+
+IN_DIR="trimmed_q_filtered"
+READS_DIR="reads_txt"
+OUT_DIR="mirna_counts"
+LOG_DIR="logs"
+MATRIX_DIR="matrix"
+
+PY_SCRIPT="miRNA_19mer_count_pipeline.py"
+
+mkdir -p "$READS_DIR" "$OUT_DIR" "$LOG_DIR" "$MATRIX_DIR"
+
+echo "======================================"
+echo "STARTING SMALL RNA PIPELINE"
+echo "======================================"
+
+########################################################
+# STEP 1 — FASTQ → READS
+########################################################
+echo "[STEP 1] FASTQ → reads"
+
+for file in ${IN_DIR}/*_trim_trim_q30.fastq.gz; do
+
+    base=$(basename "$file" .fastq.gz)
+    out="${READS_DIR}/${base}.txt"
+
+    if [ ! -f "$out" ]; then
+        echo "  Converting: $base"
+        zcat "$file" | awk 'NR%4==2 {print}' > "$out"
+    fi
+
+done
+
+########################################################
+# STEP 2 — miRNA COUNTING
+########################################################
+echo "[STEP 2] miRNA counting"
+
+for file in ${READS_DIR}/*.txt; do
+
+    sample=$(basename "$file" .txt)
+
+    echo "  Processing: $sample"
+
+    python "$PY_SCRIPT" "$file" > "$LOG_DIR/${sample}.log"
+
+    mv "${file%.*}_counts.txt" "$OUT_DIR/"
+
+done
+
+########################################################
+# STEP 3 — BUILD MERGED MATRIX
+########################################################
+echo "[STEP 3] Building merged miRNA count matrix"
+
+# temporary file list
+COUNT_FILES=$(ls $OUT_DIR/*_counts.txt)
+
+# extract all sample names
+SAMPLES=""
+
+for f in $COUNT_FILES; do
+    s=$(basename "$f" _counts.txt)
+    SAMPLES="$SAMPLES $s"
+done
+
+# create header
+echo -e "miRNA_ID\t$SAMPLES" > $MATRIX_DIR/miRNA_count_matrix.tsv
+
+# get all unique miRNAs
+cut -f1 $COUNT_FILES | sort | uniq > $MATRIX_DIR/all_mirnas.txt
+
+# build matrix
+while read mirna; do
+
+    row="$mirna"
+
+    for f in $COUNT_FILES; do
+        count=$(awk -v m="$mirna" '$1==m {print $2}' "$f")
+        if [ -z "$count" ]; then
+            count=0
+        fi
+        row="$row\t$count"
+    done
+
+    echo -e "$row" >> $MATRIX_DIR/miRNA_count_matrix.tsv
+
+done < $MATRIX_DIR/all_mirnas.txt
+
+########################################################
+# DONE
+########################################################
+
+echo "======================================"
+echo "PIPELINE COMPLETE"
+echo "======================================"
+echo "Counts folder : $OUT_DIR"
+echo "Logs folder   : $LOG_DIR"
+echo "Matrix output : $MATRIX_DIR/miRNA_count_matrix.tsv"
+echo "======================================"
+
+
+
+
+for full counting pipeline refere onedrive protocol >> miRNA_counting_
 
 
 
